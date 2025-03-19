@@ -22,9 +22,17 @@ warnings.filterwarnings('ignore')
 # Load environment variables
 load_dotenv()
 
-# Set up API client with environment variable or Streamlit secrets
-groq_api_key = st.secrets["GROQ_API_KEY"] if "GROQ_API_KEY" in st.secrets else os.getenv("GROQ_API_KEY")
-client = Groq(api_key=groq_api_key)
+# Load API key with proper error handling
+try:
+    # Try to get from Streamlit secrets first
+    groq_api_key = st.secrets["GROQ_API_KEY"]
+except (FileNotFoundError, KeyError):
+    # Fall back to environment variable
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    if not groq_api_key:
+        st.error("GROQ API key not found in Streamlit secrets or environment variables. Please set it up.")
+
+client = Groq(api_key=groq_api_key) if groq_api_key else None
 
 # Helper: add vertical space
 def add_vertical_space(lines=1):
