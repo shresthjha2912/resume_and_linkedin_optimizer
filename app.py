@@ -1,9 +1,12 @@
 import os
-import re  # Add this line
+import re
 import time
 import numpy as np
 import pandas as pd
 import streamlit as st
+# Set page config immediately as first streamlit command
+st.set_page_config(page_title='Resume Analyzer AI', layout="wide")
+
 from streamlit_option_menu import option_menu
 from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -14,7 +17,7 @@ from selenium.common.exceptions import NoSuchElementException
 from groq import Groq
 import warnings
 import random
-import urllib.parse  # Also add this if it's missing
+import urllib.parse
 from dotenv import load_dotenv
 
 warnings.filterwarnings('ignore')
@@ -22,16 +25,17 @@ warnings.filterwarnings('ignore')
 # Load environment variables
 load_dotenv()
 
-# Load API key with proper error handling
-try:
-    # Try to get from Streamlit secrets first
-    groq_api_key = st.secrets["GROQ_API_KEY"]
-except (FileNotFoundError, KeyError):
-    # Fall back to environment variable
-    groq_api_key = os.getenv("GROQ_API_KEY")
-    if not groq_api_key:
-        st.error("GROQ API key not found in Streamlit secrets or environment variables. Please set it up.")
+# Load API key without using streamlit initially
+groq_api_key = os.getenv("GROQ_API_KEY")
 
+# Only try streamlit secrets if environment variable is not set
+if not groq_api_key:
+    try:
+        groq_api_key = st.secrets["GROQ_API_KEY"]
+    except (FileNotFoundError, KeyError):
+        pass
+
+# Initialize client or set to None
 client = Groq(api_key=groq_api_key) if groq_api_key else None
 
 # Helper: add vertical space
@@ -40,7 +44,7 @@ def add_vertical_space(lines=1):
         st.write("")
 
 def streamlit_config():
-    st.set_page_config(page_title='Resume Analyzer AI', layout="wide")
+    # Don't call set_page_config here anymore
     st.markdown('<h1 style="text-align: center;">Resume Analyzer AI</h1>', unsafe_allow_html=True)
 
 class resume_analyzer:
